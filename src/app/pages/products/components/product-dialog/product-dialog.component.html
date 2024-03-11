@@ -1,0 +1,96 @@
+<p-dialog [(visible)]="display" [style]="{width: '650px'}" (onHide)="onClose()" header="Producto" [modal]="true"
+    class="p-fluid">
+    <ng-template pTemplate="content">
+        <div [formGroup]="productForm">
+
+            <div class="field">
+                <label for="name">Nombre</label>
+                <input type="text" pInputText  formControlName="Nombre" maxlength="100"  />
+            </div>
+            <div class="formgrid grid">
+                <div class="field col">
+                    <label for="ClaveProdServ">Clave producto Servicio</label>
+                    <input type="text" formControlName="ClaveProdServ" pInputText maxlength="25"  />
+                </div>
+                <div class="field col">
+                    <label for="name">Clave unidad</label>
+                    <input type="text" formControlName="ClaveUnidad" pInputText maxlength="25" />
+                </div>
+            </div>
+             <div class="formgrid grid">
+                <div class="field col">
+                    <label for="price">Unidad</label>
+                    <input type="text" formControlName="Unidad" pInputText maxlength="25"  />
+                </div>
+                <div class="field col">
+                    <label for="name">Descripcion</label>
+                    <input type="text" formControlName="Descripcion" pInputText maxlength="255"  />
+                </div>
+            </div>
+            <div class="formgrid grid">
+                <div class="field col">
+                    <label for="price">Valor Unitario</label>
+                    <p-inputNumber  inputId="minmaxfraction" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="5" formControlName="ValorUnitario" maxlength="9" > </p-inputNumber>
+                  
+                </div>
+            </div>
+
+            <div>
+                <div>Agrega una Foto al producto</div>
+                <p-fileUpload #form  name="myfile[]"  customUpload="true" accept="image/*" multiple="multiple" maxFileSize="2000000" (onSelect)="onUpload($event, form)">
+                </p-fileUpload>
+              </div>
+              
+              <div class="card" *ngIf="productsFiles.length > 0">
+                <p>Archivos seleccionados:</p>
+                <p-carousel [value]="productsFiles" [numVisible]="3" [numScroll]="3" [circular]="false" [responsiveOptions]="responsiveOptions">
+                    <ng-template let-file pTemplate="item">
+                        <div class="border-1 surface-border border-round m-2 text-center py-5 px-3">
+                            <div class="mb-3">
+                                <img [src]="file.objectURL" class="w-6 shadow-2" />
+                            </div>
+                            <div>
+                                <div class="mt-5 flex align-items-center justify-content-center gap-2">
+                                    <p-button icon="pi pi-times" [rounded]="true" severity="danger" (click)="removeFile(file)"></p-button>
+                            </div>
+                            </div>
+                        </div>
+                    </ng-template>
+                </p-carousel>
+            </div>
+
+
+
+
+
+          
+
+
+<div class="card" *ngIf="action =='update'">
+    <p-galleria [(value)]="images" [showIndicators]="true" [showThumbnails]="false" [responsiveOptions]="responsiveOptions" [containerStyle]="{ 'max-width': '640px' }">
+        <ng-template pTemplate="item" let-item>
+            <img [src]="item" style="width: 50%; display: block;" />
+        </ng-template>
+    </p-galleria>
+</div>
+
+
+
+
+
+
+
+
+     
+        </div>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button pButton pRipple label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="onClose()"></button>
+        <button [loading]="isWorking" pButton pRipple label="Guardar" icon="pi pi-check" class="p-button-text"
+            (click)="handleAction()"></button>
+    </ng-template>
+
+
+
+</p-dialog>

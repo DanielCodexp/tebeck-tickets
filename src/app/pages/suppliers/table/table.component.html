@@ -1,0 +1,92 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <p-toast key="tst"></p-toast>
+            <p-toolbar styleClass="mb-4">
+                <ng-template pTemplate="left">
+                    <p-fileUpload mode="basic" accept="image/*" [maxFileSize]="1000000" label="Import"
+                        chooseLabel="Import" class="mr-2 inline-block"></p-fileUpload>
+                    <button pButton pRipple label="Exportar" icon="pi pi-upload" class="p-button-help"
+                        (click)="dt.exportCSV()"></button>
+                </ng-template>
+                <ng-template pTemplate="right">
+                    <div class="my-2">
+                        <button pButton pRipple label="Nuevo Proveedor" icon="pi pi-plus" class="p-button-success"
+                            (click)="openNew()"></button>
+                    </div>
+                </ng-template>
+            </p-toolbar>
+
+            <p-table [loading]="isLoading" #dt [value]="suppliers" [columns]="cols" responsiveLayout="scroll" [rows]="10"
+                [globalFilterFields]="['name','phone','email']" [paginator]="true" [rowsPerPageOptions]="[10,20,30]"
+                [showCurrentPageReport]="true"
+                currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} administradores"
+                [rowHover]="true" dataKey="_id">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Proveedores</h5>
+                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."
+                                class="w-full sm:w-auto" />
+                        </span>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+
+                        <th pSortableColumn="name">Nombre <p-sortIcon field="name"></p-sortIcon></th>
+                        <th pSortableColumn="phone"> Teléfono<p-sortIcon field="phone"></p-sortIcon>
+                        </th>
+                        <th pSortableColumn="email"> Correo<p-sortIcon field="email"></p-sortIcon>
+                        </th>
+                        <th pSortableColumn="creationDate">Fecha de creacion <p-sortIcon
+                                field="creationDate"></p-sortIcon>
+                        </th>
+                        <th></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-supplier>
+                    <tr>
+
+
+                        <td style="width:20%; min-width:8rem;">
+                            <span class="p-column-title">Nombre</span>
+                            {{supplier.name}}
+                        </td>
+                        <td style="width:14%; min-width:10rem;">
+                            <span class="p-column-title">Teléfono</span>
+                            {{supplier.phone}}
+                        </td>
+                        <td style="width:25%; min-width:10rem;">
+                            <span class="p-column-title">Correo</span>
+                            {{supplier.email                            }}
+                        </td>
+                        <td style="width:25%; min-width:10rem;">
+                            <span class="p-column-title">Fecha de creación</span>
+                            {{supplier.creationDate |date:'longDate' }}
+                        </td>
+                        <td>
+                            <div class="flex">
+                                <button pButton pRipple icon="pi pi-pencil"
+                                    class="p-button-rounded p-button-success mr-2" (click)="openEdit(supplier)"></button>
+                                <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning"
+                                    (click)="deleteSupplier(supplier)"></button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+
+            <app-admin-dialog [supplierToBeUpdated]="supplierToBeUpdated" [display]="showingSupplierDialog"
+            [action]="supplierDialogAction" (onOperationCompleted)="onOperationComplete($event)"
+            (displayChange)="supplierDialogDisplayChange($event)"></app-admin-dialog>
+
+        <app-delete-dialog [supplierToBeDeleted]="supplierToBeDeleted" [display]="showingDeleteDialog"
+            (onSupplierDeleted)="onOperationComplete($event)"
+            (displayChange)="deleteDialogDisplayChange($event)"></app-delete-dialog>
+
+
+    </div>
+</div>

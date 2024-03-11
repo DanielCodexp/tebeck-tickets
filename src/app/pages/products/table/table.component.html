@@ -1,0 +1,71 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <p-toast></p-toast>
+            <p-table [loading]="isLoading" #dt [value]="tickets" [rows]="10" [paginator]="true"
+                [globalFilterFields]="['name', 'country.name', 'representative.name', 'status']"
+                [tableStyle]="{ 'min-width': '75rem' }" [(selection)]="selectedProducts" [rowHover]="true" dataKey="id"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                [showCurrentPageReport]="true" responsiveLayout="scroll">
+                <ng-template pTemplate="caption">
+                    <div class="flex align-items-center justify-content-between">
+                        <h5 class="m-0">Tickets</h5>
+                        <span class="p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="dt.filterGlobal($event.target.value, 'contains')"
+                                placeholder="Search..." />
+                        </span>
+                        <button (click)="downloadTickets()" pButton type="button" icon="pi pi-download">
+                          </button>
+
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th pSortableColumn="key" style="min-width:15rem">Key<p-sortIcon field="key"></p-sortIcon></th>
+                        <th pSortableColumn="NombreOperador">Nombre Operador<p-sortIcon
+                                field="NombreOperador"></p-sortIcon></th>
+                        <th pSortableColumn="status" style="min-width:10rem">Estado<p-sortIcon
+                                field="status"></p-sortIcon></th>
+                                <th pSortableColumn="qrCode" style="min-width:10rem">QR<p-sortIcon
+                                    field="qrCode"></p-sortIcon></th>
+                        <th></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-tickets>
+                    <tr>
+                        <td>{{ tickets.key }}</td>
+                        <td>{{ tickets.NombreOperador}}</td>
+                        <td> {{ tickets.status }} </td>
+                        <td>
+                            <img [src]="tickets.qrCode" alt="QR Code" >
+                          </td>
+                        <td>
+                            <!-- <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2"
+                                (click)="editProduct(product)"></button>
+                            <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning"
+                                (click)="deleteProduct(product)"></button> -->
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="summary">
+                    <!-- <div class="flex align-items-center justify-content-between">In total there are {{ products ?
+                        products.length : 0 }} tickets.</div> -->
+                </ng-template>
+            </p-table>
+        </div>
+
+        <app-product-dialog [productToBeUpdated]="productToBeUpdated" [display]="showingProductDialog"
+            [action]="productDialogAction" (onOperationCompleted)="onOperationComplete($event)"
+            (displayChange)="productDialogDisplayChange($event)"></app-product-dialog>
+
+
+        <app-delete-dialog [productToBeDeleted]="productToBeDeleted" [display]="showingDeleteDialog"
+            (onProductDeleted)="onOperationComplete($event)" (displayChange)="deleteDialogDisplayChange($event)">
+
+        </app-delete-dialog>
+
+
+
+    </div>
+</div>

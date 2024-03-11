@@ -1,0 +1,87 @@
+<p-dialog [(visible)]="display" [style]="{width: '650px'}" (onHide)="onClose()" header="Administrador" [modal]="true"
+    class="p-fluid">
+    <ng-template pTemplate="content">
+        <div [formGroup]="adminForm">
+
+            <div class="field">
+                <label for="name">Nombre</label>
+                <input type="text" pInputText id="name" formControlName="name" />
+            </div>
+            <div class="formgrid grid">
+                <div class="field col">
+                    <label for="price">Telefono</label>
+                    <p-inputMask unmask="true" mask="(999) 999-9999" formControlName="phone"
+                        placeholder="(999) 999-9999"></p-inputMask>
+                </div>
+                <div class="field col">
+                    <label for="name">Rol del Usuario</label>
+                    <p-dropdown [options]="userType" placeholder="Selecciona una opción" formControlName="userType"
+                        [(ngModel)]="selecteduserType">
+                    </p-dropdown>
+                </div>
+            </div>
+            <div class="formgrid grid">
+                <div class="field col">
+                    <label for="price">Correo</label>
+                    <input type="text" pInputText formControlName="email" />
+                </div>
+                <div *ngIf="action =='create'" class="field col">
+                    <label for="name">Contraseña</label>
+                    <p-password appendTo="body" formControlName="password" [toggleMask]="true"></p-password>
+                </div>
+            </div>
+
+
+            <div>
+                <p>Agrega una Foto de Perfil</p>
+                <div *ngIf="action =='update'">
+                     <p>En Caso de tener Foto de perfil esta se actualizara</p>
+                </div>
+
+                <p-fileUpload #form  name="myfile[]"  customUpload="true" accept="image/*"  maxFileSize="2000000" (onSelect)="onUpload($event, form)">
+                </p-fileUpload>
+              </div>
+
+              <div class="card" *ngIf="productsFiles.length > 0">
+                <div>{{ action == 'create' ? 'Agregar' : 'Actualizar' }} - Archivo Seleccionado</div>
+
+                <div *ngFor="let file of productsFiles" class="border-1 surface-border border-round m-2 text-center py-5 px-3" style="position: relative;">
+                    <div class="mb-3" style="position: relative;">
+                        <p-image [src]="file.objectURL" width="100%" class="w-6 shadow-2"></p-image>
+                        <button pButton icon="pi pi-times" class="p-button-rounded p-button-danger" style="position: absolute; top: 5px; right: 5px; color: #e24c4c;
+                        background: #f9fafb9c;
+                        border: none;" (click)="removeFile(file)"></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card justify-content-center" *ngIf="action =='update' && productsFiles.length  <= 0">
+                <p>Foto de Perfil</p>
+                <p-image src={{profileUrl}}
+                alt="Image" width="100%"></p-image>
+            </div>
+
+
+
+
+
+
+
+
+        </div>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button pButton pRipple label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="onClose()"></button>
+        <button [loading]="isWorking" pButton pRipple label="Guardar" icon="pi pi-check" class="p-button-text"
+            (click)="handleAction()"></button>
+    </ng-template>
+
+
+
+
+
+
+
+
+</p-dialog>

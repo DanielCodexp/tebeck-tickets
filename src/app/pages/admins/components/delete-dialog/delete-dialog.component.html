@@ -1,0 +1,13 @@
+<p-dialog [(visible)]="display" (onHide)="onClose()" header="Confirmar acción" [modal]="true" [style]="{width:'450px'}">
+    <div class="flex align-items-center justify-content-center">
+        <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+        <span *ngIf="adminToBeDeleted">¿Está seguro que desea borrar
+            <b>{{adminToBeDeleted?.name}}</b>?</span>
+    </div>
+    <ng-template pTemplate="footer">
+        <button pButton pRipple icon="pi pi-times" class="p-button-text" label="Cancelar"
+            (click)="onClose()"></button>
+        <button [loading]="isWorking" pButton pRipple icon="pi pi-trash" class="p-button-text p-button-danger" label="Borrar"
+            (click)="confirmDelete()"></button>
+    </ng-template>
+</p-dialog>
