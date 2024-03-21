@@ -1,10 +1,9 @@
-
 <select [(ngModel)]="selectedPrinter" (change)="showTicket()">
     <option *ngFor="let printer of printers" [value]="printer.key">{{ printer.name }}</option>
   </select>
 
   <div *ngIf="selectedPrinter">
     <p>{{ selectedPrinterData }}</p>
-    <img [src]="imagenURL" alt="Imagen">
-    <button (click)="downloadTickets()" >Descargar</button>
+    <img [src]="imagenURL" alt="Imagen" (load)="onImageLoad($event)">
+    <button (click)="downloadTickets()">Descargar</button>
   </div>

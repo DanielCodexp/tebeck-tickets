@@ -38,6 +38,8 @@ export class ProductsTableComponent {
     printers;
     filteredTickets: Ticket[];
     imagenURL: string = '';
+    imageLoaded: boolean = false;
+ticketImage: HTMLImageElement | undefined;
 
 
   selectedPrinterData: string;
@@ -86,41 +88,41 @@ export class ProductsTableComponent {
     }
 
 
-    downloadTickets(): void {
-        const anchoEtiqueta = 48; // Ancho de la etiqueta en mm
-        const largoEtiqueta = 50; // Largo de la etiqueta en mm
-        const margenVertical = 10; // Margen vertical entre etiquetas en mm
+    // downloadTickets(): void {
+    //     const anchoEtiqueta = 48; // Ancho de la etiqueta en mm
+    //     const largoEtiqueta = 50; // Largo de la etiqueta en mm
+    //     const margenVertical = 10; // Margen vertical entre etiquetas en mm
 
-        // Configuración del tamaño del documento según el tamaño de la etiqueta
-        const doc = new jsPDF({
-            orientation: 'p', // Orientación vertical
-            unit: 'mm', // Unidades en milímetros
-            format: [anchoEtiqueta, largoEtiqueta] // Establecer el tamaño del documento
-        });
+    //     // Configuración del tamaño del documento según el tamaño de la etiqueta
+    //     const doc = new jsPDF({
+    //         orientation: 'p', // Orientación vertical
+    //         unit: 'mm', // Unidades en milímetros
+    //         format: [anchoEtiqueta, largoEtiqueta] // Establecer el tamaño del documento
+    //     });
 
-        let y = margenVertical; // Ajuste para que la primera etiqueta no comience en el borde superior
+    //     let y = margenVertical; // Ajuste para que la primera etiqueta no comience en el borde superior
 
-        let isFirstPage = true;
+    //     let isFirstPage = true;
 
-        this.tickets?.forEach(ticket => {
-            if (ticket.key && ticket.qrCode) {
-                // Si no es la primera página, agregar un salto de página
-                if (!isFirstPage) {
-                    doc.addPage();
-                } else {
-                    isFirstPage = false;
-                }
+    //     this.tickets?.forEach(ticket => {
+    //         if (ticket.key && ticket.qrCode) {
+    //             // Si no es la primera página, agregar un salto de página
+    //             if (!isFirstPage) {
+    //                 doc.addPage();
+    //             } else {
+    //                 isFirstPage = false;
+    //             }
 
-                // Agregar código QR a la página actual
-                const qrImage = new Image();
-                qrImage.src = ticket.qrCode;
-                doc.addImage(qrImage, 'PNG', 0, 0, anchoEtiqueta, largoEtiqueta);
-            }
-        });
+    //             // Agregar código QR a la página actual
+    //             const qrImage = new Image();
+    //             qrImage.src = ticket.qrCode;
+    //             doc.addImage(qrImage, 'PNG', 0, 0, anchoEtiqueta, largoEtiqueta);
+    //         }
+    //     });
 
-        // Guardar el documento completo (con todas las páginas)
-        doc.save('tickets.pdf');
-    }
+    //     // Guardar el documento completo (con todas las páginas)
+    //     doc.save('tickets.pdf');
+    // }
 
     generateTicketsContent(): string {
         let content = '';
@@ -135,8 +137,62 @@ export class ProductsTableComponent {
         return content;
     }
 
+    onImageLoad(event: Event): void {
+        this.ticketImage = event.target as HTMLImageElement;
+        this.imageLoaded = true;
+      }
 
+      downloadTickets(): void {
+        const anchoEtiqueta = 48; // Ancho de la etiqueta en mm
+        const largoEtiqueta = 50; // Largo de la etiqueta en mm
+        const margenVertical = 10; // Margen vertical entre etiquetas en mm
 
+        // Crear una promesa que se resolverá una vez que la imagen se cargue completamente
+        const loadImagePromise = new Promise<HTMLImageElement>((resolve, reject) => {
+          const ticketImage = new Image();
+          ticketImage.onload = () => resolve(ticketImage);
+          ticketImage.onerror = reject;
+          ticketImage.src = this.imagenURL; // URL de la imagen
+        });
+
+        // Esperar a que la imagen se cargue completamente
+        loadImagePromise.then(ticketImage => {
+          // Configuración del tamaño del documento según el tamaño de la etiqueta
+          const doc = new jsPDF({
+            orientation: 'p', // Orientación vertical
+            unit: 'mm', // Unidades en milímetros
+            format: [anchoEtiqueta, largoEtiqueta] // Establecer el tamaño del documento
+          });
+
+          let y = margenVertical; // Ajuste para que la primera etiqueta no comience en el borde superior
+
+          let isFirstPage = true;
+
+          this.tickets?.forEach(ticket => {
+            if (ticket.key && ticket.qrCode) {
+              // Si no es la primera página, agregar un salto de página
+              if (!isFirstPage) {
+                doc.addPage();
+              } else {
+                isFirstPage = false;
+              }
+
+              // Agregar código QR a la página actual
+              const qrImage = new Image();
+              qrImage.src = ticket.qrCode;
+              doc.addImage(qrImage, 'PNG', 0, 0, anchoEtiqueta, largoEtiqueta);
+
+              // Agregar la imagen mostrada al documento PDF
+              doc.addImage(ticketImage, 'PNG', 0, 0, anchoEtiqueta, largoEtiqueta);
+            }
+          });
+
+          // Guardar el documento completo (con todas las páginas)
+          doc.save('tickets.pdf');
+        }).catch(error => {
+          console.error('Error al cargar la imagen:', error);
+        });
+      }
 
     showToaster({ severity = "success", summary = "¡Éxito!", detail = "Accion realizada correctamente" }) {
         this.messageService.add({ key: 'tst', severity: severity, summary: summary, detail: detail });
