@@ -24,12 +24,9 @@ export class ProductsTableComponent {
     selectedProducts!: Product[] | null;
     submitted: boolean = false;
     statuses!: any[];
-    public showingDeleteDialog = false;
-    public showingProductDialog = false;
-    public productDialogAction = "create";
 
-    public productToBeDeleted: Product;
-    public productToBeUpdated: Product;
+
+
 
 
     tickets?: Ticket[];
@@ -45,16 +42,22 @@ ticketImage: HTMLImageElement | undefined;
 
   selectedPrinterData: string;
   qrCodeURL: string;
+  selectedPrinterKey: string;
 
     constructor(
         private messageService: MessageService,
         private confirmationService: ConfirmationService,
         private productsService: ProductsService
     ) {
+        this.selectedPrinter = ''; // Inicializa el valor de selectedPrinter
+        this.printers = []; // Inicializa el arreglo de impresoras
+        this.selectedPrinterData = ''; // Inicializa la data de la impresora seleccionada
+        this.imagenURL = ''; // Inicializa la URL de la imagen
     }
 
     ngOnInit() {
         this.getInformationRoutine();
+        this.retrieveCurrentTickets();
     }
 
     async getInformationRoutine(): Promise<void> {
@@ -149,35 +152,30 @@ ticketImage: HTMLImageElement | undefined;
           )
         ).subscribe(data => {
           const res = data;
-          const impresoras = res.filter(ticket => ticket.key === 'impresoras')[0];
-
+          const impresoras = res.find(ticket => ticket.key === 'impresoras');
+            console.log(impresoras)
           if (impresoras) {
             delete impresoras.key;
             this.printers = Object.keys(impresoras).map((key, index) => ({
               key: 'impresora' + index,
-              name: 'Impresora ' + index,
+              name: key,
               value: impresoras[key]
             }));
-            console.log( this.printers)
+            if (this.selectedPrinter === '') {
+                this.selectedPrinter = this.printers[0].name; // Establece la primera impresora como seleccionada por defecto
+            }
+            this.showTicket();
           }
         });
       }
 
       showTicket(): void {
-        if (this.selectedPrinter) {
-          const selectedPrinterInfo = this.printers.find(printer => printer.key === this.selectedPrinter);
-          if (selectedPrinterInfo) {
+        const selectedPrinterInfo = this.printers.find(printer => printer.name === this.selectedPrinter);
+        if (selectedPrinterInfo) {
             this.selectedPrinterData = selectedPrinterInfo.value;
-            console.log(this.selectedPrinterData);
             this.generarQR(this.selectedPrinterData);
-
-            // Guardar la impresora seleccionada en el localStorage
-            localStorage.setItem('selectedPrinter', JSON.stringify(selectedPrinterInfo));
-            this.imprimirTicket(selectedPrinterInfo);
-          }
         }
-      }
-
+    }
       imprimirTicket(selectedPrinterInfo: any): void {
         console.log("hola")
         const anchoEtiqueta = 48;
@@ -270,9 +268,6 @@ ticketImage: HTMLImageElement | undefined;
         this.selectedPrinter = previousPrinter;
     }
 }
-
-
-
     }
 
 

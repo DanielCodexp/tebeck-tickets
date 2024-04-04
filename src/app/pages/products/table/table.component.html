@@ -1,10 +1,10 @@
-<div>
+ <div>
     <p>Selecciona una impresora</p>
 </div>
 
 <select [(ngModel)]="selectedPrinter" (change)="showTicket()">
     <option *ngIf="!selectedPrinter" disabled value="" hidden>Selecciona una impresora</option>
-    <option *ngFor="let printer of printers" [value]="printer.key">{{ printer.name }}</option>
+    <option *ngFor="let printer of printers" [value]="printer.name">{{ printer.name }}</option>
   </select>
 
   <div *ngIf="selectedPrinter">
@@ -13,17 +13,4 @@
     <button (click)="downloadPDFWithImage()">Descargar PDF</button>
   </div>
 
-  <div>
-    <p>Selecciona una impresora</p>
-</div>
 
-<select [(ngModel)]="selectedPrinter" (ngModelChange)="updateSelectedPrinter($event)">
-    <option *ngIf="!selectedPrinter" disabled value="" hidden>Selecciona una impresora</option>
-    <option *ngFor="let printer of printers" [value]="printer.key">{{ printer.name }}</option>
-</select>
-
-<div *ngIf="selectedPrinter">
-    <p>{{ selectedPrinterData }}</p>
-    <img #ticketImage [src]="imagenURL" alt="Imagen">
-    <button (click)="downloadPDFWithImage()">Descargar PDF</button>
-</div>
