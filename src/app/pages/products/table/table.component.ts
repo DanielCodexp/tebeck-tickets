@@ -17,6 +17,7 @@ import jsPDF from 'jspdf';
 })
 export class ProductsTableComponent {
     @ViewChild('qrCode', { static: true }) qrCodeElement: ElementRef;
+    @ViewChild('ticketImage', { static: false }) ticketImageElement: ElementRef;
     public isLoading = false;
     productDialog: boolean = false;
     product!: Product[];
@@ -86,44 +87,6 @@ ticketImage: HTMLImageElement | undefined;
             });
         });
     }
-
-
-    // downloadTickets(): void {
-    //     const anchoEtiqueta = 48; // Ancho de la etiqueta en mm
-    //     const largoEtiqueta = 50; // Largo de la etiqueta en mm
-    //     const margenVertical = 10; // Margen vertical entre etiquetas en mm
-
-    //     // Configuración del tamaño del documento según el tamaño de la etiqueta
-    //     const doc = new jsPDF({
-    //         orientation: 'p', // Orientación vertical
-    //         unit: 'mm', // Unidades en milímetros
-    //         format: [anchoEtiqueta, largoEtiqueta] // Establecer el tamaño del documento
-    //     });
-
-    //     let y = margenVertical; // Ajuste para que la primera etiqueta no comience en el borde superior
-
-    //     let isFirstPage = true;
-
-    //     this.tickets?.forEach(ticket => {
-    //         if (ticket.key && ticket.qrCode) {
-    //             // Si no es la primera página, agregar un salto de página
-    //             if (!isFirstPage) {
-    //                 doc.addPage();
-    //             } else {
-    //                 isFirstPage = false;
-    //             }
-
-    //             // Agregar código QR a la página actual
-    //             const qrImage = new Image();
-    //             qrImage.src = ticket.qrCode;
-    //             doc.addImage(qrImage, 'PNG', 0, 0, anchoEtiqueta, largoEtiqueta);
-    //         }
-    //     });
-
-    //     // Guardar el documento completo (con todas las páginas)
-    //     doc.save('tickets.pdf');
-    // }
-
     generateTicketsContent(): string {
         let content = '';
         this.tickets?.forEach(ticket => {
@@ -195,6 +158,7 @@ ticketImage: HTMLImageElement | undefined;
               name: 'Impresora ' + index,
               value: impresoras[key]
             }));
+            console.log( this.printers)
           }
         });
       }
@@ -204,11 +168,47 @@ ticketImage: HTMLImageElement | undefined;
           const selectedPrinterInfo = this.printers.find(printer => printer.key === this.selectedPrinter);
           if (selectedPrinterInfo) {
             this.selectedPrinterData = selectedPrinterInfo.value;
-            console.log( this.selectedPrinterData)
+            console.log(this.selectedPrinterData);
             this.generarQR(this.selectedPrinterData);
+
+            // Guardar la impresora seleccionada en el localStorage
+            localStorage.setItem('selectedPrinter', JSON.stringify(selectedPrinterInfo));
+            this.imprimirTicket(selectedPrinterInfo);
           }
         }
       }
+
+      imprimirTicket(selectedPrinterInfo: any): void {
+        console.log("hola")
+        const anchoEtiqueta = 48;
+        const largoEtiqueta = 50;
+        const margenVertical = 10;
+
+        if (this.ticketImageElement && this.ticketImageElement.nativeElement) {
+          const ticketImage = this.ticketImageElement.nativeElement;
+
+          const doc = new jsPDF({
+            orientation: 'p',
+            unit: 'mm',
+            format: [anchoEtiqueta, largoEtiqueta]
+          });
+          const imgData = ticketImage.src;
+          doc.addImage(imgData, 'PNG', 0, 0, anchoEtiqueta, largoEtiqueta);
+
+          // Abrir una nueva ventana con el PDF incrustado
+          const ventanaImpresion = window.open('', '_blank', 'height=400,width=600');
+          ventanaImpresion.document.write('<embed width="100%" height="100%" name="plugin" src="' + doc.output('datauristring') + '" type="application/pdf" />');
+
+          // Esperar a que el PDF se cargue completamente en la ventana de impresión
+          ventanaImpresion.onload = () => {
+            // Iniciar la impresión del PDF
+            ventanaImpresion.print();
+          };
+        } else {
+          console.error('El elemento de la imagen no está disponible.');
+        }
+      }
+
       generarQR(id: string) {
         QRCode.toDataURL(id, { errorCorrectionLevel: 'H' }, (err, url) => {
           if (err) {
@@ -232,7 +232,44 @@ ticketImage: HTMLImageElement | undefined;
 
 
       }
+     downloadPDFWithImage(): void {
+      const anchoEtiqueta = 48;
+      const largoEtiqueta = 50;
+      const margenVertical = 10;
 
+    if (this.ticketImageElement && this.ticketImageElement.nativeElement) {
+
+      const ticketImage = this.ticketImageElement.nativeElement;
+
+
+      const doc = new jsPDF({
+        orientation: 'p',
+        unit: 'mm',
+        format: [anchoEtiqueta, largoEtiqueta]
+      });
+      const imgData = ticketImage.src;
+      doc.addImage(imgData, 'PNG', 0, 0, anchoEtiqueta, largoEtiqueta);
+
+      doc.save('ticket.pdf');
+    } else {
+      console.error('El elemento de la imagen no está disponible.');
+    }
+  }
+  updateSelectedPrinter(newPrinterKey: string) {
+    // Guardar el valor actual de selectedPrinter
+    const previousPrinter = this.selectedPrinter;
+
+    // Actualizar el valor de selectedPrinter
+    this.selectedPrinter = newPrinterKey;
+
+    // Verificar si el valor actualizado de selectedPrinter existe en el arreglo de impresoras
+    const printerExists = this.printers.some(printer => printer.key === this.selectedPrinter);
+
+    // Si no existe, asignar el valor anterior de selectedPrinter
+    if (!printerExists) {
+        this.selectedPrinter = previousPrinter;
+    }
+}
 
 
 
