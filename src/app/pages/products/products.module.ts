@@ -99,13 +99,15 @@ import { StyleClassModule } from 'primeng/styleclass';
 import { DeleteDialogComponent } from './components/delete-dialog/delete-dialog.component';
 import { ProductDialogComponent } from './components/product-dialog/product-dialog.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { PrintComponent } from './components/print/print.component';
 
 @NgModule({
   declarations: [
     ProductsTableComponent,
     DeleteDialogComponent,
-    ProductDialogComponent
-    
+    ProductDialogComponent,
+    PrintComponent
+
   ],
   imports: [
     CommonModule,

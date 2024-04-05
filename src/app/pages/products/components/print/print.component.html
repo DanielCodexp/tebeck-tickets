@@ -1,0 +1,9 @@
+<div class="justify-content-center container">
+<p>{{printer}} </p>
+<div *ngFor="let printer of printerSelect">
+<p >{{ printer.value }}</p>
+<img #ticketImage [src]="imagenURL" alt="Imagen">
+</div>
+
+
+</div>

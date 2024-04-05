@@ -14,3 +14,19 @@
   </div>
 
 
+<div class="flex justify-content-center">
+    <p>Selecciona una impresora</p>
+</div>
+<div class="flex justify-content-center">
+    <div class="row col-12">
+        <div class="col-4"  *ngFor="let printer of printers">
+            <div class="card" (click)="goTo(printer.name)" style="width: 90%; display: flex; cursor: pointer;
+            align-items: center;">
+                <i class="pi pi-print" style="color: green;     font-size: 34px;"></i>
+                <p>{{ printer.name }}</p>
+            </div>
+
+        </div>
+
+    </div>
+</div>

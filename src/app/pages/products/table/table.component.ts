@@ -6,6 +6,7 @@ import { Ticket } from 'src/app/models/ticket';
 import { map } from 'rxjs';
 import * as QRCode from 'qrcode';
 import jsPDF from 'jspdf';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-products-table',
@@ -32,7 +33,8 @@ export class ProductsTableComponent {
     constructor(
         private messageService: MessageService,
         private confirmationService: ConfirmationService,
-        private productsService: ProductsService
+        private productsService: ProductsService,
+        private router: Router,
     ) {
         this.selectedPrinter = '';
         this.printers = [];
@@ -193,4 +195,12 @@ export class ProductsTableComponent {
             console.error('El elemento de la imagen no está disponible.');
         }
     }
+
+
+    async goTo(printer:string) {
+        this.router.navigate(['products/print/' + printer])
+    }
+
+
+
 }
