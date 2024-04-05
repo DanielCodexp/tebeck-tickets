@@ -2,7 +2,8 @@
 <p>{{printer}} </p>
 <div *ngFor="let printer of printerSelect">
 <p >{{ printer.value }}</p>
-<img #ticketImage [src]="imagenURL" alt="Imagen">
+<img #ticketImage [src]="imagenURL" alt="Imagen" (load)="showTicket()">
+
 </div>
 
 

@@ -35,11 +35,10 @@ constructor(
     this.printer = this.route.snapshot.paramMap.get('printer');
     console.log(this.printer)
 }
-
-async ngOnInit():Promise<void> {
-    this.retrieveCurrentTickets();
+async ngOnInit(): Promise<void> {
+    await this.retrieveCurrentTickets(); // Esperamos a que los datos de las impresoras estén disponibles
+    this.renderizarQR(); // Una vez que los datos estén disponibles, generamos el QR y renderizamos la imagen
 }
-
 
 async retrieveCurrentTickets(): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -64,9 +63,7 @@ async retrieveCurrentTickets(): Promise<void> {
                this.printerSelect = this.printers.filter(printer => printer.name === this.printer);
                 console.log(this.printerSelect)
                 if (this.printerSelect.length > 0) {
-                    this.showTicket().then(() => {
-                        resolve();
-                    });
+                    resolve();
                 } else {
                     reject("No se encontró la impresora con el nombre especificado");
                 }
@@ -78,68 +75,27 @@ async retrieveCurrentTickets(): Promise<void> {
 }
 
 
-async showTicket(): Promise<void> {
-    return new Promise((resolve, reject) => {
-
-        if (this.printerSelect) {
-            this.selectedPrinterData = this.printerSelect[0].value;
-            this.generarQR(this.selectedPrinterData);
-            this.imprimirTicket(this.printerSelect[0]).then(() => {
-                resolve();
-            }).catch((error) => {
-                reject(error);
-            });
-        } else {
-            reject("No se encontró la impresora seleccionada");
-        }
-    });
+async renderizarQR(): Promise<void> {
+    if (this.printerSelect && this.printerSelect.length > 0) {
+        const selectedPrinterData = this.printerSelect[0].value;
+        await this.generarQR(selectedPrinterData);
+        this.showTicket(); // Llama a showTicket() una vez que la imagen esté lista
+    } else {
+        console.error("No se encontró la impresora seleccionada");
+    }
 }
 
-async imprimirTicket(selectedPrinterInfo: any): Promise<void> {
-    return new Promise((resolve, reject) => {
-        console.log("Imprimiendo...");
-        const anchoEtiqueta = 48;
-        const largoEtiqueta = 50;
-        const margenVertical = 10;
-
-        if (this.ticketImageElement && this.ticketImageElement.nativeElement) {
-            const ticketImage = this.ticketImageElement.nativeElement;
-
-            const doc = new jsPDF({
-                orientation: 'p',
-                unit: 'mm',
-                format: [anchoEtiqueta, largoEtiqueta]
-            });
-            const imgData = ticketImage.src;
-            doc.addImage(imgData, 'PNG', 0, 0, anchoEtiqueta, largoEtiqueta);
-
-            // Abrir una nueva ventana con el PDF incrustado
-            const ventanaImpresion = window.open('', '_blank', 'height=400,width=600');
-            ventanaImpresion.document.write('<embed width="100%" height="100%" name="plugin" src="' + doc.output('datauristring') + '" type="application/pdf" />');
-
-            // Esperar a que el PDF se cargue completamente en la ventana de impresión
-            ventanaImpresion.onload = () => {
-                // Iniciar la impresión del PDF
-                ventanaImpresion.print();
-                resolve();
-            };
-        } else {
-            console.error('El elemento de la imagen no está disponible.');
-            reject("El elemento de la imagen no está disponible.");
-        }
-    });
-}
-
-generarQR(id: string) {
+async generarQR(id: string): Promise<void> {
     QRCode.toDataURL(id, { errorCorrectionLevel: 'H' }, (err, url) => {
         if (err) {
             console.error(err);
             return;
         }
-        this.renderizarQR(url);
+        this.convertirUrlImagen(url);
     });
 }
-renderizarQR(url: string) {
+
+convertirUrlImagen(url: string): void {
     const byteString = atob(url.split(',')[1]);
     const ab = new ArrayBuffer(byteString.length);
     const ia = new Uint8Array(ab);
@@ -150,5 +106,44 @@ renderizarQR(url: string) {
     this.imagenURL = URL.createObjectURL(blob);
 }
 
+async showTicket(): Promise<void> {
+    console.log("Mostrando ticket...");
+    if (this.printerSelect && this.printerSelect.length > 0) {
+        await this.imprimirTicket(this.printerSelect[0]);
+    } else {
+        console.error("No se encontró la impresora seleccionada");
+    }
+}
+
+async imprimirTicket(selectedPrinterInfo: any): Promise<void> {
+    console.log("Imprimiendo...");
+    const anchoEtiqueta = 48;
+    const largoEtiqueta = 50;
+    const margenVertical = 10;
+
+    if (this.ticketImageElement && this.ticketImageElement.nativeElement) {
+        const ticketImage = this.ticketImageElement.nativeElement;
+
+        const doc = new jsPDF({
+            orientation: 'p',
+            unit: 'mm',
+            format: [anchoEtiqueta, largoEtiqueta]
+        });
+        const imgData = ticketImage.src;
+        doc.addImage(imgData, 'PNG', 0, 0, anchoEtiqueta, largoEtiqueta);
+
+        // Abrir una nueva ventana con el PDF incrustado
+        const ventanaImpresion = window.open('', '_blank', 'height=400,width=600');
+        ventanaImpresion.document.write('<embed width="100%" height="100%" name="plugin" src="' + doc.output('datauristring') + '" type="application/pdf" />');
+
+        // Esperar a que el PDF se cargue completamente en la ventana de impresión
+        ventanaImpresion.onload = () => {
+            // Iniciar la impresión del PDF
+            ventanaImpresion.print();
+        };
+    } else {
+        console.error('El elemento de la imagen no está disponible.');
+    }
+}
 
 }
