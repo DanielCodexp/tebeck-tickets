@@ -4,6 +4,7 @@ import { map } from 'rxjs';
 import { ProductsService } from 'src/app/services/products/products.service';
 import * as QRCode from 'qrcode';
 import jsPDF from 'jspdf';
+import ConectorPluginV3 from './ConectorPluginV3';
 
 export interface print {
 name: string;
@@ -27,6 +28,12 @@ export class PrintComponent {
     imagenURL: string = '';
     printerSelect:print[]=[];
 
+    // mandar a imprimir automaticamente
+    impresoras= [];
+    impresoraSeleccionada: string = "";
+    mensaje: string = "";
+
+
 constructor(
     private route: ActivatedRoute,
     private productsService: ProductsService,
@@ -34,11 +41,14 @@ constructor(
 ) {
     this.printer = this.route.snapshot.paramMap.get('printer');
     console.log(this.printer)
+
 }
 async ngOnInit(): Promise<void> {
     await this.retrieveCurrentTickets(); // Esperamos a que los datos de las impresoras estén disponibles
     this.renderizarQR(); // Una vez que los datos estén disponibles, generamos el QR y renderizamos la imagen
+    this.impresoras = await ConectorPluginV3.obtenerImpresoras();
 }
+
 
 async retrieveCurrentTickets(): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -119,7 +129,6 @@ async imprimirTicket(selectedPrinterInfo: any): Promise<void> {
     console.log("Imprimiendo...");
     const anchoEtiqueta = 48;
     const largoEtiqueta = 50;
-    const margenVertical = 10;
 
     if (this.ticketImageElement && this.ticketImageElement.nativeElement) {
         const ticketImage = this.ticketImageElement.nativeElement;
@@ -132,18 +141,67 @@ async imprimirTicket(selectedPrinterInfo: any): Promise<void> {
         const imgData = ticketImage.src;
         doc.addImage(imgData, 'PNG', 0, 0, anchoEtiqueta, largoEtiqueta);
 
-        // Abrir una nueva ventana con el PDF incrustado
-        const ventanaImpresion = window.open('', '_blank', 'height=400,width=600');
-        ventanaImpresion.document.write('<embed width="100%" height="100%" name="plugin" src="' + doc.output('datauristring') + '" type="application/pdf" />');
+        // Imprimir directamente
+        doc.autoPrint();
 
-        // Esperar a que el PDF se cargue completamente en la ventana de impresión
-        ventanaImpresion.onload = () => {
-            // Iniciar la impresión del PDF
-            ventanaImpresion.print();
-        };
+        // Guardar el documento en una variable de tipo ArrayBuffer
+        const pdfOutput = doc.output();
+
+        // Crear un blob a partir del ArrayBuffer
+        const blob = new Blob([pdfOutput], { type: 'application/pdf' });
+
+        // Crear una URL del blob
+        const url = URL.createObjectURL(blob);
+
+        // Crear un objeto de tipo iframe para cargar la URL
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = url;
+
+        // Adjuntar el iframe al cuerpo del documento
+        document.body.appendChild(iframe);
+
+        // Esperar un corto tiempo para asegurar que el archivo se cargue en el iframe
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // Imprimir el documento
+        iframe.contentWindow.print();
+
+        // Eliminar el iframe después de la impresión
+        setTimeout(() => {
+            document.body.removeChild(iframe);
+        }, 1500);
     } else {
         console.error('El elemento de la imagen no está disponible.');
     }
 }
+
+
+async probarImpresion() {
+    if (!this.impresoraSeleccionada) {
+      return alert("Seleccione una impresora");
+    }
+
+    if (!this.mensaje) {
+      return alert("Escribe un mensaje");
+    }
+    const conector = new ConectorPluginV3();
+    conector
+      .Iniciar()
+      .EstablecerAlineacion(ConectorPluginV3.ALINEACION_CENTRO)
+      .EscribirTexto("Hola Angular desde parzibyte.me")
+      .Feed(1)
+      .EscribirTexto(this.mensaje)
+      .Feed(1)
+      .DescargarImagenDeInternetEImprimir("https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Angular_full_color_logo.svg/1200px-Angular_full_color_logo.svg.png", ConectorPluginV3.TAMAÑO_IMAGEN_NORMAL, 400)
+      .Iniciar()
+      .Feed(1);
+    const respuesta = await conector.imprimirEn(this.impresoraSeleccionada);
+    if (respuesta == true) {
+      console.log("Impresión correcta");
+    } else {
+      console.log("Error: " + respuesta);
+    }
+  }
 
 }

@@ -8,3 +8,18 @@
 
 
 </div>
+
+
+<label for="impresora">Impresora:&nbsp;</label>
+<select id="impresora" [(ngModel)]="impresoraSeleccionada">
+  <option *ngFor="let impresora of impresoras" [ngValue]="impresora">{{impresora}}</option>
+</select>
+<br>
+
+<br>
+<label for="mensaje">Escribe un mensaje:</label>
+<input [(ngModel)]="mensaje" type="text" id="mensaje" placeholder="Mensaje">
+<br>
+<br>
+
+<button (click)="probarImpresion()">Imprimir</button>
