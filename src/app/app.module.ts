@@ -16,7 +16,8 @@ import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { environment } from 'src/environments/environment';
 import { LOCALE_ID } from '@angular/core';
 import { registerLocaleData } from '@angular/common';
-import localeEs from '@angular/common/locales/es'
+import localeEs from '@angular/common/locales/es';
+import {NgxPrintModule} from 'ngx-print';
 
 import { AngularFireDatabaseModule } from '@angular/fire/compat/database';
 
@@ -30,6 +31,7 @@ registerLocaleData(localeEs);
     imports: [
         AppRoutingModule,
         AppLayoutModule,
+        NgxPrintModule,
         AngularFireModule,
         AngularFirestoreModule,
         AngularFireModule.initializeApp(environment.firebase),

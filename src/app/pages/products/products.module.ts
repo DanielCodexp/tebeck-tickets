@@ -100,6 +100,8 @@ import { DeleteDialogComponent } from './components/delete-dialog/delete-dialog.
 import { ProductDialogComponent } from './components/product-dialog/product-dialog.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { PrintComponent } from './components/print/print.component';
+import {NgxPrintModule} from 'ngx-print';
+
 
 @NgModule({
   declarations: [
@@ -111,6 +113,7 @@ import { PrintComponent } from './components/print/print.component';
   ],
   imports: [
     CommonModule,
+    NgxPrintModule,
     ProductsRoutingModule,
     FormsModule,
 		ReactiveFormsModule,
