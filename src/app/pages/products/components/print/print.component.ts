@@ -139,7 +139,7 @@ export class PrintComponent {
         const ventanaImpresion = window.open('', '_blank', 'height=400,width=600');
         // Write PDF content to the new window
         doc.autoPrint();
-      doc.output('dataurlnewwindow');
+     // doc.output('dataurlnewwindow');
         ventanaImpresion.document.write('<embed width="100%" height="100%" name="plugin" src="' + doc.output('datauristring') + '" type="application/pdf" />');
         ventanaImpresion.onload = () => {
           // Trigger print dialog when the window is loaded
