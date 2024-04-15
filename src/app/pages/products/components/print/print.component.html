@@ -2,10 +2,7 @@
     <p>{{ printer }} </p>
     <div *ngFor="let printer of printerSelect">
       <p>{{ printer.value }}</p>
-      <div id="print-section" style="width: 15mm; height: 14mm; overflow: hidden;">
         <img #ticketImage [src]="imagenURL$ | async" alt="Imagen" (load)="showTicket()" style="width: 100%; height: auto;">
-    </div>
-
     </div>
   </div>
 
