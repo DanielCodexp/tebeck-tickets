@@ -6,6 +6,7 @@ import * as QRCode from 'qrcode';
 import jsPDF from 'jspdf';
 import { Observable } from 'rxjs'; // Importa Observable de 'rxjs'
 import { Subject } from 'rxjs';
+import html2canvas from 'html2canvas';
 
 
 interface PrinterData {
@@ -148,4 +149,33 @@ export class PrintComponent {
     }
   }
 
+
+  async imprimirTicket1(): Promise<void> {
+    console.log("Imprimiendo...");
+    const anchoEtiqueta = 48;
+    const largoEtiqueta = 50;
+
+    if (this.ticketImageElement && this.ticketImageElement.nativeElement) {
+      const ticketImage = this.ticketImageElement.nativeElement;
+
+      const doc = new jsPDF({
+        orientation: 'p',
+        unit: 'mm',
+        format: [anchoEtiqueta, largoEtiqueta]
+      });
+
+      const canvas = await html2canvas(ticketImage);
+      const imageData = canvas.toDataURL('image/png');
+
+      doc.addImage(imageData, 'PNG', 0, 0, anchoEtiqueta, largoEtiqueta);
+
+      // Imprimir directamente
+      doc.autoPrint();
+      doc.output('dataurlnewwindow'); // Esta línea envía el PDF a imprimir sin abrir una nueva ventana
+    } else {
+      console.error('El elemento de la imagen no está disponible.');
+    }
+  }
 }
+
+
