@@ -121,8 +121,8 @@ export class PrintComponent {
 
   async imprimirTicket(selectedPrinterInfo: any): Promise<void> {
     console.log("Imprimiendo...");
-    const anchoEtiqueta = 48;
-    const largoEtiqueta = 50;
+    const anchoEtiqueta = 38;
+    const largoEtiqueta = 40;
 
     if (this.ticketImageElement && this.ticketImageElement.nativeElement) {
       const ticketImage = this.ticketImageElement.nativeElement;
@@ -154,8 +154,8 @@ export class PrintComponent {
 
   async imprimirTicket1(): Promise<void> {
     console.log("Imprimiendo...");
-    const anchoEtiqueta = 48;
-    const largoEtiqueta = 50;
+    const anchoEtiqueta = 38;
+    const largoEtiqueta = 40;
 
     if (this.ticketImageElement && this.ticketImageElement.nativeElement) {
       const ticketImage = this.ticketImageElement.nativeElement;
