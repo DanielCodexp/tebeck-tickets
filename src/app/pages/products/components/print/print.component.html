@@ -2,7 +2,10 @@
     <p>{{ printer }} </p>
     <div *ngFor="let printer of printerSelect">
       <p>{{ printer.value }}</p>
-      <img #ticketImage [src]="imagenURL$ | async" alt="Imagen" (load)="showTicket()" style="max-width: 100%; height: auto;">
+      <div id="print-section">
+         <img #ticketImage [src]="imagenURL$ | async" alt="Imagen" (load)="showTicket()" style="max-width: 100%; height: auto;">
+      </div>
+
     </div>
   </div>
 
@@ -12,4 +15,4 @@
    <div>prueba</div>
   </div>
 
-  <button printSectionId="print-section" ngxPrint>print</button>
+  <button style="color: aqua;" printSectionId="print-section" ngxPrint>print</button>
