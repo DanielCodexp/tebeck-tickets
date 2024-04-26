@@ -41,7 +41,7 @@ export class PrintComponent {
 
   async ngOnInit(): Promise<void> {
     await this.retrieveCurrentTickets();
-    this.renderizarQR();
+ // await  this.renderizarQR();
   }
 
   async retrieveCurrentTickets(): Promise<void> {
@@ -87,14 +87,9 @@ export class PrintComponent {
          this.printers = impresoras;
         console.log(impresoras)
         if (impresoras) {
-         // delete impresoras.key;
-        //   this.printers = Object.keys(impresoras).map((key, index) => ({
-        //     name: key,
-        //     value: impresoras[key]
-        //   }));
-
           this.printerSelect = this.printers.filter(printer => printer.name === this.printer);
           console.log("this.printerSelect",this.printerSelect)
+           this.renderizarQR()
           if (this.printerSelect.length > 0) {
             resolve();
           } else {
