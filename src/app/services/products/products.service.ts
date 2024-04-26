@@ -12,7 +12,7 @@ import { Ticket } from 'src/app/models/ticket';
   providedIn: 'root'
 })
 export class ProductsService {
-    private dbPath = '/Tebeck';
+    private dbPath = '/BucketImpresoras';
 
     ticketRef: AngularFireList<Ticket>;
 

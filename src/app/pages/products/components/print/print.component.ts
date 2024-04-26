@@ -54,14 +54,42 @@ export class PrintComponent {
         )
       ).subscribe(data => {
         const res = data;
-        const impresoras = res.find(ticket => ticket.key === 'impresoras');
-        console.log(impresoras)
+
+        function getString(item: Record<string, any>): string {
+            let string = '';
+            for (let i = 0; i < Object.keys(item).length; i++) {
+                if (item.hasOwnProperty(i.toString())) {
+                    string += item[i];
+                }
+            }
+            return string;
+        }
+        const sortedData = data.sort((a, b) => {
+            const stringA = getString(a);
+            const stringB = getString(b);
+            if (stringA < stringB) return -1;
+            if (stringA > stringB) return 1;
+            return 0;
+        });
+        const result = sortedData.map(item => ({
+            name: item.key,
+            key: getString(item).replace(/"/g, "")
+
+        }));
+
+
+
+
+        const impresoras = result;
+        // console.log(impresoras)
         if (impresoras) {
-          delete impresoras.key;
-          this.printers = Object.keys(impresoras).map((key, index) => ({
-            name: key,
-            value: impresoras[key]
-          }));
+          //delete impresoras.key;
+        //   this.printers = Object.keys(impresoras).map((key, index) => ({
+        //     name: key,
+        //     value: impresoras[key]
+        //   }));
+        this.printers = impresoras;
+            console.log(this.printers)
 
           this.printerSelect = this.printers.filter(printer => printer.name === this.printer);
           console.log(this.printerSelect)
@@ -115,7 +143,6 @@ export class PrintComponent {
 
   async showTicket(): Promise<void> {
     console.log("Mostrando ticket...");
-    // Aquí no necesitas verificar this.printerSelect, ya que esta función es llamada después de renderizar el QR
     await this.imprimirTicket(this.printerSelect[0]);
   }
 

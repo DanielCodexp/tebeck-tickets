@@ -7,7 +7,18 @@ import { map } from 'rxjs';
 import * as QRCode from 'qrcode';
 import jsPDF from 'jspdf';
 import { Router } from '@angular/router';
-import ConectorPluginV3 from "./ConectorPluginV3";
+//import ConectorPluginV3 from "./ConectorPluginV3";
+
+
+interface PrinterData {
+    [key: string]: string | number; // Definir la interfaz para los datos de la impresora
+}
+
+interface FormattedPrinterData {
+    key: string;
+    [key: string]: string;
+}
+
 
 @Component({
     selector: 'app-products-table',
@@ -49,7 +60,7 @@ export class ProductsTableComponent {
 
     async ngOnInit() {
         this.getInformationRoutine();
-        this.impresoras = await ConectorPluginV3.obtenerImpresoras();
+        //  this.impresoras = await ConectorPluginV3.obtenerImpresoras();
     }
 
     async getInformationRoutine(): Promise<void> {
@@ -85,153 +96,40 @@ export class ProductsTableComponent {
                 )
             ).subscribe(data => {
                 const res = data;
-                const impresoras = res.find(ticket => ticket.key === 'impresoras');
-                console.log(impresoras)
-                if (impresoras) {
-                    delete impresoras.key;
-                    this.printers = Object.keys(impresoras).map((key, index) => ({
-                        key: 'impresora' + index,
-                        name: key,
-                        value: impresoras[key]
-                    }));
-                    if (this.selectedPrinter === '') {
-                        this.selectedPrinter = this.printers[0].name; // Establece la primera impresora como seleccionada por defecto
+                console.log(res)
+                function getString(item: Record<string, any>): string {
+                    let string = '';
+                    for (let i = 0; i < Object.keys(item).length; i++) {
+                        if (item.hasOwnProperty(i.toString())) {
+                            string += item[i];
+                        }
                     }
-                    this.showTicket().then(() => {
-                        resolve();
-                    });
-                } else {
-                    reject("No se encontraron impresoras");
+                    return string;
                 }
+                const sortedData = data.sort((a, b) => {
+                    const stringA = getString(a);
+                    const stringB = getString(b);
+                    if (stringA < stringB) return -1;
+                    if (stringA > stringB) return 1;
+                    return 0;
+                });
+                const result = sortedData.map(item => ({
+                    name: item.key,
+                    key: getString(item).replace(/"/g, "")
+
+                }));
+                this.printers = result;
+                console.log(this.printers);
             });
         });
     }
 
-    async showTicket(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            const selectedPrinterInfo = this.printers.find(printer => printer.name === this.selectedPrinter);
-            if (selectedPrinterInfo) {
-                this.selectedPrinterData = selectedPrinterInfo.value;
-                this.generarQR(this.selectedPrinterData);
-                this.imprimirTicket(selectedPrinterInfo).then(() => {
-                    resolve();
-                }).catch((error) => {
-                    reject(error);
-                });
-            } else {
-                reject("No se encontró la impresora seleccionada");
-            }
-        });
-    }
-
-    async imprimirTicket(selectedPrinterInfo: any): Promise<void> {
-        return new Promise((resolve, reject) => {
-            console.log("Imprimiendo...");
-            const anchoEtiqueta = 48;
-            const largoEtiqueta = 50;
-            const margenVertical = 10;
-
-            if (this.ticketImageElement && this.ticketImageElement.nativeElement) {
-                const ticketImage = this.ticketImageElement.nativeElement;
-
-                const doc = new jsPDF({
-                    orientation: 'p',
-                    unit: 'mm',
-                    format: [anchoEtiqueta, largoEtiqueta]
-                });
-                const imgData = ticketImage.src;
-                doc.addImage(imgData, 'PNG', 0, 0, anchoEtiqueta, largoEtiqueta);
-
-                // Abrir una nueva ventana con el PDF incrustado
-                const ventanaImpresion = window.open('', '_blank', 'height=400,width=600');
-                ventanaImpresion.document.write('<embed width="100%" height="100%" name="plugin" src="' + doc.output('datauristring') + '" type="application/pdf" />');
-
-                // Esperar a que el PDF se cargue completamente en la ventana de impresión
-                ventanaImpresion.onload = () => {
-                    // Iniciar la impresión del PDF
-                    ventanaImpresion.print();
-                    resolve();
-                };
-            } else {
-                console.error('El elemento de la imagen no está disponible.');
-                reject("El elemento de la imagen no está disponible.");
-            }
-        });
-    }
-
-    generarQR(id: string) {
-        QRCode.toDataURL(id, { errorCorrectionLevel: 'H' }, (err, url) => {
-            if (err) {
-                console.error(err);
-                return;
-            }
-            this.renderizarQR(url);
-        });
-    }
-
-    renderizarQR(url: string) {
-        const byteString = atob(url.split(',')[1]);
-        const ab = new ArrayBuffer(byteString.length);
-        const ia = new Uint8Array(ab);
-        for (let i = 0; i < byteString.length; i++) {
-            ia[i] = byteString.charCodeAt(i);
-        }
-        const blob = new Blob([ab], { type: 'image/png' });
-        this.imagenURL = URL.createObjectURL(blob);
-    }
-
-    downloadPDFWithImage(): void {
-        const anchoEtiqueta = 48;
-        const largoEtiqueta = 50;
-        const margenVertical = 10;
-
-        if (this.ticketImageElement && this.ticketImageElement.nativeElement) {
-            const ticketImage = this.ticketImageElement.nativeElement;
-
-            const doc = new jsPDF({
-                orientation: 'p',
-                unit: 'mm',
-                format: [anchoEtiqueta, largoEtiqueta]
-            });
-            const imgData = ticketImage.src;
-            doc.addImage(imgData, 'PNG', 0, 0, anchoEtiqueta, largoEtiqueta);
-
-            doc.save('ticket.pdf');
-        } else {
-            console.error('El elemento de la imagen no está disponible.');
-        }
-    }
 
 
-    async goTo(printer:string) {
+
+
+    async goTo(printer: string) {
         this.router.navigate(['products/print/' + printer])
     }
-
-    async probarImpresion() {
-        if (!this.impresoraSeleccionada) {
-          return alert("Seleccione una impresora");
-        }
-
-        if (!this.mensaje) {
-          return alert("Escribe un mensaje");
-        }
-        const conector = new ConectorPluginV3();
-        conector
-          .Iniciar()
-          .EstablecerAlineacion(ConectorPluginV3.ALINEACION_CENTRO)
-          .EscribirTexto("Hola Angular desde parzibyte.me")
-          .Feed(1)
-          .EscribirTexto(this.mensaje)
-          .Feed(1)
-          .DescargarImagenDeInternetEImprimir("https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Angular_full_color_logo.svg/1200px-Angular_full_color_logo.svg.png", ConectorPluginV3.TAMAÑO_IMAGEN_NORMAL, 400)
-          .Iniciar()
-          .Feed(1);
-        const respuesta = await conector.imprimirEn(this.impresoraSeleccionada);
-        if (respuesta == true) {
-          console.log("Impresión correcta");
-        } else {
-          console.log("Error: " + respuesta);
-        }
-      }
 
 }
