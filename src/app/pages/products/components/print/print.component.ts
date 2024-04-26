@@ -11,7 +11,7 @@ import html2canvas from 'html2canvas';
 
 interface PrinterData {
   name: string;
-  value: string;
+  key: string;
 }
 
 @Component({
@@ -54,7 +54,6 @@ export class PrintComponent {
         )
       ).subscribe(data => {
         const res = data;
-
         function getString(item: Record<string, any>): string {
             let string = '';
             for (let i = 0; i < Object.keys(item).length; i++) {
@@ -80,19 +79,22 @@ export class PrintComponent {
 
 
 
+
+
+
+
         const impresoras = result;
-        // console.log(impresoras)
+         this.printers = impresoras;
+        console.log(impresoras)
         if (impresoras) {
-          //delete impresoras.key;
+         // delete impresoras.key;
         //   this.printers = Object.keys(impresoras).map((key, index) => ({
         //     name: key,
         //     value: impresoras[key]
         //   }));
-        this.printers = impresoras;
-            console.log(this.printers)
 
           this.printerSelect = this.printers.filter(printer => printer.name === this.printer);
-          console.log(this.printerSelect)
+          console.log("this.printerSelect",this.printerSelect)
           if (this.printerSelect.length > 0) {
             resolve();
           } else {
@@ -108,7 +110,8 @@ export class PrintComponent {
 
   async renderizarQR(): Promise<void> {
     if (this.printerSelect && this.printerSelect.length > 0) {
-      const selectedPrinterData = this.printerSelect[0].value;
+      const selectedPrinterData = this.printerSelect[0].key;
+      console.log("selec", selectedPrinterData)
       await this.generarQR(selectedPrinterData);
     } else {
       console.error("No se encontró la impresora seleccionada");
@@ -116,6 +119,7 @@ export class PrintComponent {
   }
 
   async generarQR(id: string): Promise<void> {
+    console.log(id)
     QRCode.toDataURL(id, { errorCorrectionLevel: 'H' }, (err, url) => {
       if (err) {
         console.error(err);
@@ -126,6 +130,7 @@ export class PrintComponent {
   }
 
   convertirUrlImagen(url: string): void {
+    console.log("url", url)
     const byteString = atob(url.split(',')[1]);
     const ab = new ArrayBuffer(byteString.length);
     const ia = new Uint8Array(ab);
@@ -143,6 +148,7 @@ export class PrintComponent {
 
   async showTicket(): Promise<void> {
     console.log("Mostrando ticket...");
+    // Aquí no necesitas verificar this.printerSelect, ya que esta función es llamada después de renderizar el QR
     await this.imprimirTicket(this.printerSelect[0]);
   }
 
