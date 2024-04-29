@@ -14,13 +14,19 @@ import { graficas } from 'src/app/models/graficas';
 export class DashboardComponent implements OnInit, OnDestroy {
 
     items!: MenuItem[];
-    chartData: any;
+   // chartData: any;
     chartOptions: any;
     subscription!: Subscription;
 
     public isLoading = false;
     currentTicket: any;
     currentIndex = -1;
+
+    public datos: any[] = [];
+    chartData = {
+        labels: ['actual', 'anterior', 'anteriorDeAnterior'],
+        datasets: []
+      };
 
     constructor(
         private productService: ProductService,
@@ -38,10 +44,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     ngOnInit() {
         this.initChart();
         this.getInformationRoutine();
-       this.items = [
-            { label: 'Add New', icon: 'pi pi-fw pi-plus' },
-            { label: 'Remove', icon: 'pi pi-fw pi-minus' }
-        ];
     }
 
     initChart() {
@@ -49,58 +51,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         const textColor = documentStyle.getPropertyValue('--text-color');
         const textColorSecondary = documentStyle.getPropertyValue('--text-color-secondary');
         const surfaceBorder = documentStyle.getPropertyValue('--surface-border');
-
-        this.chartData = {
-            labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-            datasets: [
-                {
-                    label: 'First Dataset',
-                    data: [65, 59, 80, 81, 56, 55, 40],
-                    fill: false,
-                    backgroundColor: documentStyle.getPropertyValue('--bluegray-700'),
-                    borderColor: documentStyle.getPropertyValue('--bluegray-700'),
-                    tension: .4
-                },
-                {
-                    label: 'Second Dataset',
-                    data: [28, 48, 40, 19, 86, 27, 90],
-                    fill: false,
-                    backgroundColor: documentStyle.getPropertyValue('--green-600'),
-                    borderColor: documentStyle.getPropertyValue('--green-600'),
-                    tension: .4
-                }
-            ]
-        };
-
-        this.chartOptions = {
-            plugins: {
-                legend: {
-                    labels: {
-                        color: textColor
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    ticks: {
-                        color: textColorSecondary
-                    },
-                    grid: {
-                        color: surfaceBorder,
-                        drawBorder: false
-                    }
-                },
-                y: {
-                    ticks: {
-                        color: textColorSecondary
-                    },
-                    grid: {
-                        color: surfaceBorder,
-                        drawBorder: false
-                    }
-                }
-            }
-        };
     }
 
     ngOnDestroy() {
@@ -131,44 +81,37 @@ export class DashboardComponent implements OnInit, OnDestroy {
                 )
             ).subscribe(data => {
                 const res = data;
+                this.datos = res;
 
-                const newData = {
-                    labels: res.map(item => item.key),
-                    datasets: [
-                        {
-                            label: 'Actual',
-                            data: res.map(item => parseInt(item.actual)),
-                            fill: false,
-                            backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--bluegray-700'),
-                            borderColor: getComputedStyle(document.documentElement).getPropertyValue('--bluegray-700'),
-                            tension: .4
-                        },
-                        {
-                            label: 'Anterior',
-                            data: res.map(item => parseInt(item.anterior)),
-                            fill: false,
-                            backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--green-600'),
-                            borderColor: getComputedStyle(document.documentElement).getPropertyValue('--green-600'),
-                            tension: .4
-                        },
-                        {
-                            label: 'Anterior de Anterior',
-                            data: res.map(item => parseInt(item.anteriorDeAnterior)),
-                            fill: false,
-                            backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--orange-600'),
-                            borderColor: getComputedStyle(document.documentElement).getPropertyValue('--orange-600'),
-                            tension: .4
-                        }
-                    ]
-                };
-
-                this.chartData = newData;
-
-                console.log(this.chartData);
-
+               this.procesarDatos()
             });
         });
     }
+
+
+    procesarDatos() {
+
+        this.datos.sort((a, b) => a.key.localeCompare(b.key));
+        this.chartData.datasets = this.datos.map(item => {
+          return {
+            label: item.key,
+            data: [parseInt(item.actual), parseInt(item.anterior), parseInt(item.anteriorDeAnterior)],
+            fill: false,
+            backgroundColor: this.getColor(item.key),
+            borderColor: this.getColor(item.key),
+            tension: 0.4
+          };
+        });
+ this.isLoading = true;
+        console.log( this.chartData.datasets)
+      }
+
+      getColor(key: string): string {
+        return key === 'T1' ? '#37474F' : '#2E7D32';
+      }
+
+
+
 
 
 

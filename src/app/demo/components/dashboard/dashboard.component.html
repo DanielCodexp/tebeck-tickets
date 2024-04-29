@@ -1,8 +1,18 @@
 <div class="grid">
     <div class="col-12 xl:col-6">
         <div class="card">
-            <h5>Sales Overview</h5>
+            <h5>Graficas</h5>
             <p-chart type="line" [data]="chartData" [options]="chartOptions"></p-chart>
         </div>
     </div>
 </div>
+
+
+<div class="grid">
+    <div class="col-12 xl:col-6" *ngFor="let dataset of chartData.datasets">
+      <div class="card">
+        <h5>{{ dataset.label }}</h5>
+        <p-chart type="line" [data]="dataset" [options]="chartOptions"></p-chart>
+      </div>
+    </div>
+  </div>
