@@ -1,4 +1,16 @@
+
+
+
+
 /* You can add global styles to this file, and also import other style files */
+
+:root {
+    --bluegray-700: #37474f;
+    --green-600: #4caf50;
+    --orange-600: #ff9800;
+  }
+
+
 
 $gutter: 1rem; //for primeflex grid system
 @import "assets/layout/styles/layout/layout.scss";
