@@ -77,12 +77,12 @@ export class PrintComponent {
                 this.printers = impresoras;
                 if (impresoras) {
                     this.printerSelect = this.printers.filter(printer => printer.name === this.printer);
-                    console.log("this.printerSelect",this.printerSelect[0].key.trim())
-                    console.log("this.previousTicket",this.previousTicket)
-                    if (this.printerSelect[0].key !== this.previousTicket ||  this.previousTicket === undefined) {
+                    console.log("this.printerSelect", this.printerSelect[0].key.trim())
+                    console.log("this.previousTicket", this.previousTicket)
+                    if (this.printerSelect[0].key !== this.previousTicket || this.previousTicket === undefined) {
                         console.log('La clave ha cambiado:', this.printerSelect[0].key);
-                      //  this.previousTicket = this.printerSelect[0].key;
-                         this.renderizarQR()
+                        //  this.previousTicket = this.printerSelect[0].key;
+                        this.renderizarQR()
                     }
                 } else {
                     reject("No se encontraron impresoras");
@@ -127,18 +127,18 @@ export class PrintComponent {
     }
 
     async showTicket(): Promise<void> {
-        console.log("imprimir printerSelect",this.printerSelect[0].key)
-        console.log("imprimir previousTicket",this.previousTicket)
-if(this.printerSelect[0].key === this.previousTicket ){
-console.log("funcion para imprimir igual")
+        console.log("imprimir printerSelect", this.printerSelect[0].key)
+        console.log("imprimir previousTicket", this.previousTicket)
+        if (this.printerSelect[0].key === this.previousTicket) {
+            console.log("funcion para imprimir igual")
 
-} else {
-    await this.imprimirTicket(this.printerSelect[0]);
-    console.log("funcion para imprimir no es igual")
-    this.previousTicket = this.printerSelect[0].key;
-}
+        } else {
+            await this.imprimirTicket(this.printerSelect[0]);
+            console.log("funcion para imprimir no es igual")
+            this.previousTicket = this.printerSelect[0].key;
+        }
 
-    // await this.imprimirTicket(this.printerSelect[0]);
+        // await this.imprimirTicket(this.printerSelect[0]);
     }
 
     async imprimirTicket(selectedPrinterInfo: any): Promise<void> {
