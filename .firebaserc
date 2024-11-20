@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "tebeck-c34bb"
-  }
+  },
+  "targets": {
+    "tebeck-c34bb": {
+      "hosting": {
+        "panel": [
+          "tebeck-panel"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
