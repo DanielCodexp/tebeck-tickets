@@ -24,7 +24,7 @@ export class PrintComponent {
     printers: any[];
     selectedPrinter: any;
     imagenURL$: Observable<string>;
-    printerSelect: PrinterData[] = [];
+    printerSelect: any;
     imagenURLSubject: Subject<string> = new Subject<string>();
     public previousTicket;
 
@@ -35,6 +35,7 @@ export class PrintComponent {
         private changeDetectorRef: ChangeDetectorRef
     ) {
         this.printer = this.route.snapshot.paramMap.get('printer');
+        console.log(this.printer)
     }
 
     async ngOnInit(): Promise<void> {
@@ -51,37 +52,14 @@ export class PrintComponent {
                 )
             ).subscribe(async data => {
                 const res = data;
-                function getString(item: Record<string, any>): string {
-                    let string = '';
-                    for (let i = 0; i < Object.keys(item).length; i++) {
-                        if (item.hasOwnProperty(i.toString())) {
-                            string += item[i];
-                        }
-                    }
-                    return string;
-                }
-                const sortedData = data.sort((a, b) => {
-                    const stringA = getString(a);
-                    const stringB = getString(b);
-                    if (stringA < stringB) return -1;
-                    if (stringA > stringB) return 1;
-                    return 0;
-                });
-                const result = sortedData.map(item => ({
-                    name: item.key,
-                    key: getString(item).replace(/"/g, "")
 
-                }));
+                this.printers = res;
 
-                const impresoras = result;
-                this.printers = impresoras;
-                if (impresoras) {
-                    this.printerSelect = this.printers.filter(printer => printer.name === this.printer);
-                    console.log("this.printerSelect", this.printerSelect[0].key.trim())
-                    console.log("this.previousTicket", this.previousTicket)
-                    if (this.printerSelect[0].key !== this.previousTicket || this.previousTicket === undefined) {
+                if ( this.printers) {
+                    this.printerSelect = this.printers.filter(printer => printer.key === this.printer);
+                    console.log("printerSelect",this.printerSelect)
+                    if (this.printerSelect[0].codigoQR !== this.previousTicket || this.previousTicket === undefined) {
                         console.log('La clave ha cambiado:', this.printerSelect[0].key);
-                        //  this.previousTicket = this.printerSelect[0].key;
                         this.renderizarQR()
                     }
                 } else {
@@ -93,7 +71,7 @@ export class PrintComponent {
 
     async renderizarQR(): Promise<void> {
         if (this.printerSelect && this.printerSelect.length > 0) {
-            const selectedPrinterData = this.printerSelect[0].key;
+            const selectedPrinterData = this.printerSelect[0].codigoQR;
             await this.generarQR(selectedPrinterData);
         } else {
             console.error("No se encontró la impresora seleccionada");
@@ -127,78 +105,81 @@ export class PrintComponent {
     }
 
     async showTicket(): Promise<void> {
-        console.log("imprimir printerSelect", this.printerSelect[0].key)
-        console.log("imprimir previousTicket", this.previousTicket)
-        if (this.printerSelect[0].key === this.previousTicket) {
+        console.log("printerSelect", this.printerSelect[0].codigoQR)
+        console.log("previousTicket", this.previousTicket)
+        if (this.printerSelect[0].codigoQR === this.previousTicket) {
             console.log("funcion para imprimir igual")
 
         } else {
-            await this.imprimirTicket(this.printerSelect[0]);
+            await this.imprimirSeccionHTML();
             console.log("funcion para imprimir no es igual")
-            this.previousTicket = this.printerSelect[0].key;
-        }
-
-        // await this.imprimirTicket(this.printerSelect[0]);
-    }
-
-    async imprimirTicket(selectedPrinterInfo: any): Promise<void> {
-
-        const anchoEtiqueta = 25;
-        const largoEtiqueta = 25;
-
-        if (this.ticketImageElement && this.ticketImageElement.nativeElement) {
-            const ticketImage = this.ticketImageElement.nativeElement;
-
-            const doc = new jsPDF({
-                orientation: 'p',
-                unit: 'mm',
-                format: [anchoEtiqueta, largoEtiqueta]
-            });
-
-            this.imagenURL$.subscribe(imgData => {
-                doc.addImage(imgData, 'PNG', 0, 0, anchoEtiqueta, largoEtiqueta);
-                // Open a new window to display the PDF
-                const ventanaImpresion = window.open('', '_blank', 'height=400,width=600');
-                // Write PDF content to the new window
-                doc.autoPrint();
-                // doc.output('dataurlnewwindow');
-                ventanaImpresion.document.write('<embed width="100%" height="100%" name="plugin" src="' + doc.output('datauristring') + '" type="application/pdf" />');
-                ventanaImpresion.onload = () => {
-                    // Trigger print dialog when the window is loaded
-                    ventanaImpresion.print();
-                };
-            });
-        } else {
-            console.error('El elemento de la imagen no está disponible.');
+            this.previousTicket = this.printerSelect[0].codigoQR;
         }
     }
 
+    async imprimirSeccionHTML(): Promise<void> {
+        const anchoEtiqueta = 100;
+        const largoEtiqueta = 150;
 
-    async imprimirTicket1(): Promise<void> {
-        const anchoEtiqueta = 38;
-        const largoEtiqueta = 40;
-
-        if (this.ticketImageElement && this.ticketImageElement.nativeElement) {
-            const ticketImage = this.ticketImageElement.nativeElement;
-
-            const doc = new jsPDF({
-                orientation: 'p',
-                unit: 'mm',
-                format: [anchoEtiqueta, largoEtiqueta]
-            });
-
-            const canvas = await html2canvas(ticketImage);
-            const imageData = canvas.toDataURL('image/png');
-
-            doc.addImage(imageData, 'PNG', 0, 0, anchoEtiqueta, largoEtiqueta);
-
-            // Imprimir directamente
-            doc.autoPrint();
-            doc.output('dataurlnewwindow'); // Esta línea envía el PDF a imprimir sin abrir una nueva ventana
-        } else {
-            console.error('El elemento de la imagen no está disponible.');
+        const seccionElement = document.querySelector('section');
+        if (!seccionElement) {
+          console.error('La sección HTML no está disponible.');
+          return;
         }
-    }
+
+        try {
+          // Captura la sección como un canvas
+          const canvas = await html2canvas(seccionElement, {
+            scale: 2,
+            useCORS: true,
+          });
+
+          // Convierte el canvas a una imagen
+          const imgData = canvas.toDataURL('image/png');
+
+          // Muestra la imagen capturada en la consola para verificarla
+          console.log('Imagen capturada:', imgData);
+
+          // Crea un documento PDF
+          const doc = new jsPDF({
+            orientation: 'p',
+            unit: 'mm',
+            format: [anchoEtiqueta, largoEtiqueta],
+          });
+
+          // Agrega la imagen al documento
+          doc.addImage(imgData, 'PNG', 0, 0, anchoEtiqueta, largoEtiqueta);
+
+          // Abre una ventana emergente para mostrar el PDF
+          const ventanaImpresion = window.open('', '_blank', 'height=400,width=600');
+          if (ventanaImpresion) {
+            // Genera el PDF y lo inyecta en la ventana
+            const pdfDataUri = doc.output('datauristring');
+          //  console.log('PDF generado:', pdfDataUri);
+
+            ventanaImpresion.document.open();
+            ventanaImpresion.document.write(
+              `<embed width="100%" height="100%" name="plugin" src="${pdfDataUri}" type="application/pdf" />`
+            );
+            ventanaImpresion.document.close();
+
+            ventanaImpresion.onload = () => {
+              ventanaImpresion.print();
+              setTimeout(() => {
+                ventanaImpresion.close();
+              }, 500);
+            };
+          } else {
+            console.error('No se pudo abrir la ventana de impresión.');
+          }
+        } catch (error) {
+          console.error('Error al capturar la sección HTML:', error);
+        }
+      }
+
+
+
+
 }
 
 

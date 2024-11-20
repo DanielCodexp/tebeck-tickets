@@ -2,3 +2,34 @@
 //     width: 50mm; /* Ancho deseado en milímetros */
 //     height: 50mm; /* Alto deseado en milímetros */
 //   }
+
+section {
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: Arial, sans-serif;
+    }
+    th, td {
+        border: 1px solid #000;
+        padding: 8px;
+        text-align: left;
+    }
+    .header-logo {
+        text-align: center;
+    }
+    .qr {
+        text-align: center;
+    }
+    .turnos {
+        text-align: center;
+    }
+    .turnos div {
+        margin: 5px 0;
+    }
+    .highlight {
+        font-weight: bold;
+    }
+    .text-center {
+        text-align: center;
+    }
+}

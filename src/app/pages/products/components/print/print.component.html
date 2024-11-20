@@ -1,7 +1,71 @@
-<div class="justify-content-center container">
-    <p>{{ printer }} </p>
-    <div *ngFor="let printer of printerSelect">
-      <p>{{ printer.key }}</p>
-        <img #ticketImage [src]="imagenURL$ | async" alt="Imagen" (load)="showTicket()" style="width: 20%; height: auto;">
-    </div>
-  </div>
+
+  <section>
+    <table>
+        <tr>
+            <td rowspan="2" class="header-logo">
+                <img src="assets/robot.png" alt="TBECK Logo" width="100"><br>
+
+            </td>
+            <td colspan="3" class="highlight">ID VIAJERA</td>
+            <td rowspan="2" class="qr">
+                <img #ticketImage [src]="imagenURL$ | async" alt="Imagen" (load)="showTicket()" style="width: 30%; height: auto;">
+            </td>
+        </tr>
+        <tr>
+            <!-- <td>ORDEN DE TRABAJO</td>
+            <td>FECHA</td>
+            <td># CAJA</td> -->
+        </tr>
+        <tr>
+            <td class="highlight">ORDEN DE TRABAJO</td>
+            <td colspan="3">{{printerSelect[0].ordenTrabajo}}</td>
+            <td class="text-center">FECHA</td>
+        </tr>
+        <tr>
+            <td class="highlight">CLIENTE</td>
+            <td colspan="3"></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td class="highlight">DESCRIPCIÓN</td>
+            <td colspan="3"></td>
+            <td class="highlight text-center"># CAJA</td>
+        </tr>
+        <tr>
+            <td class="highlight">NÚMERO DE PARTE</td>
+            <td colspan="3">{{printerSelect[0].NumeroParte}}</td>
+            <td class="text-center"> {{printerSelect[0].NumeroDeCaja }}</td>
+        </tr>
+        <tr>
+            <td class="highlight">NÚMERO DE PIEZAS</td>
+            <td colspan="3">{{printerSelect[0].NumeroPzs }}</td>
+            <td class="highlight text-center">TURNO</td>
+        </tr>
+        <tr>
+            <td class="highlight">PESO NETO KG:</td>
+            <td colspan="3"></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td class="highlight">OPERADOR:</td>
+            <td colspan="3"></td>
+            <td class="qr">
+                <img src="assets/image.png" alt="QR Informativo" width="100">
+
+            </td>
+        </tr>
+        <tr>
+            <td rowspan="2" colspan="4" class="turnos">
+                <img #ticketImage [src]="imagenURL$ | async" alt="Imagen" (load)="showTicket()" style="width: 30%; height: auto;">
+            </td>
+            <td>SELLO DE AUTORIZACIÓN</td>
+        </tr>
+        <tr>
+            <td></td>
+        </tr>
+        <tr>
+            <td colspan="4">LIBERADO POR:</td>
+            <td></td>
+        </tr>
+    </table>
+  </section>
