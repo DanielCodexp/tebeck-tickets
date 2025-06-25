@@ -55,9 +55,9 @@ export class PrintComponent {
 
                 this.printers = res;
 
-                if ( this.printers) {
+                if (this.printers) {
                     this.printerSelect = this.printers.filter(printer => printer.key === this.printer);
-                    console.log("printerSelect",this.printerSelect)
+                    console.log("printerSelect", this.printerSelect)
                     if (this.printerSelect[0].codigoQR !== this.previousTicket || this.previousTicket === undefined) {
                         console.log('La clave ha cambiado:', this.printerSelect[0].key);
                         this.renderizarQR()
@@ -105,77 +105,112 @@ export class PrintComponent {
     }
 
     async showTicket(): Promise<void> {
-        console.log("printerSelect", this.printerSelect[0].codigoQR)
-        console.log("previousTicket", this.previousTicket)
+        console.log("Invocando showTicket");
         if (this.printerSelect[0].codigoQR === this.previousTicket) {
-            console.log("funcion para imprimir igual")
-
+            console.log("La clave no ha cambiado, no se imprime.");
         } else {
-            await this.imprimirSeccionHTML();
-            console.log("funcion para imprimir no es igual")
+            console.log("La clave ha cambiado, se imprime.");
+            await this.imprimirTablaHTML();
             this.previousTicket = this.printerSelect[0].codigoQR;
         }
     }
 
-    async imprimirSeccionHTML(): Promise<void> {
-        const anchoEtiqueta = 100;
-        const largoEtiqueta = 150;
 
-        const seccionElement = document.querySelector('section');
-        if (!seccionElement) {
-          console.error('La sección HTML no está disponible.');
-          return;
+
+
+    async imprimirTablaHTML(): Promise<void> {
+
+        console.log("entro funcion para imprimir")
+
+        const anchoEtiqueta = 100; // Ancho de la etiqueta en mm
+        const largoEtiqueta = 150; // Largo de la etiqueta en mm
+
+        // Selecciona el contenedor completo de la tabla
+        const ticketContainer = document.getElementById('ticketContainer');
+
+        if (ticketContainer) {
+            try {
+                // Captura el contenido del contenedor como un canvas
+                const canvas = await html2canvas(ticketContainer, {
+                    scale: 2, // Escala para mejorar la calidad de la captura
+                    useCORS: true, // Permite cargar imágenes de otros dominios
+                    allowTaint: true, // Habilita el acceso a recursos externos
+                    backgroundColor: null, // Permite fondos transparentes
+                });
+
+                // Redimensiona el canvas para que se ajuste a las dimensiones de la etiqueta
+                const imgWidth = anchoEtiqueta; // en mm
+                const imgHeight = largoEtiqueta; // en mm
+
+                // Redimensionamos el canvas a las dimensiones deseadas en píxeles
+                const ratio = canvas.width / canvas.height;
+                let resizedCanvas = document.createElement('canvas');
+                let resizedCtx = resizedCanvas.getContext('2d');
+                if (resizedCtx) {
+                    resizedCanvas.width = imgWidth * 3.68;  // Convertimos mm a píxeles (1mm ≈ 3.78px)
+                  resizedCanvas.height = imgHeight * 3.68;
+
+                    resizedCtx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, resizedCanvas.width, resizedCanvas.height);
+                }
+
+                // Convierte el canvas redimensionado a una imagen base64
+                const imageData = resizedCanvas.toDataURL('image/png');
+
+                // Configura el documento PDF
+                const doc = new jsPDF({
+                    orientation: 'p',
+                    unit: 'mm',
+                    format: [anchoEtiqueta, largoEtiqueta],
+                });
+
+                // Agrega la imagen al PDF con las dimensiones especificadas
+                doc.addImage(imageData, 'PNG', 0, 0, anchoEtiqueta, largoEtiqueta);
+
+                // Genera el PDF en formato base64
+                const pdfDataUri = doc.output('datauristring');
+
+                // Abre una nueva ventana para incrustar el PDF
+                const anchoVentana = anchoEtiqueta * 3.78;
+                const largoVentana = largoEtiqueta * 3.78;
+                const ventanaImpresion = window.open("", "_blank", `width=${anchoVentana},height=${largoVentana}`);
+
+                if (ventanaImpresion) {
+                    // Escribe el contenido en la nueva ventana
+                    ventanaImpresion.document.open();
+                    ventanaImpresion.document.write(`
+                        <html>
+                        <head>
+                            <title>Imprimir</title>
+                        </head>
+                        <body style="margin: 0; padding: 0;">
+                            <iframe
+                                src="${imageData}"
+                                style="border: none; width: 100%; height: 100%;"
+                                frameborder="0">
+                            </iframe>
+                        </body>
+                        </html>
+                    `);
+                    ventanaImpresion.document.close();
+
+                    // Opcional: Imprime automáticamente al cargar el contenido
+                    ventanaImpresion.onload = () => {
+                        ventanaImpresion.print();
+                        setTimeout(() => {
+                            ventanaImpresion.close();
+                        }, 500); // Cierra la ventana tras un breve retraso
+                    };
+                } else {
+                    console.error('No se pudo abrir la ventana de impresión.');
+                }
+            } catch (error) {
+                console.error('Error al capturar y generar el PDF:', error);
+            }
+        } else {
+            console.error('El contenedor de la tabla no está disponible.');
         }
+    }
 
-        try {
-          // Captura la sección como un canvas
-          const canvas = await html2canvas(seccionElement, {
-            scale: 2,
-            useCORS: true,
-          });
-
-          // Convierte el canvas a una imagen
-          const imgData = canvas.toDataURL('image/png');
-
-          // Muestra la imagen capturada en la consola para verificarla
-          console.log('Imagen capturada:', imgData);
-
-          // Crea un documento PDF
-          const doc = new jsPDF({
-            orientation: 'p',
-            unit: 'mm',
-            format: [anchoEtiqueta, largoEtiqueta],
-          });
-
-          // Agrega la imagen al documento
-          doc.addImage(imgData, 'PNG', 0, 0, anchoEtiqueta, largoEtiqueta);
-
-          // Abre una ventana emergente para mostrar el PDF
-          const ventanaImpresion = window.open('', '_blank', 'height=400,width=600');
-          if (ventanaImpresion) {
-            // Genera el PDF y lo inyecta en la ventana
-            const pdfDataUri = doc.output('datauristring');
-          //  console.log('PDF generado:', pdfDataUri);
-
-            ventanaImpresion.document.open();
-            ventanaImpresion.document.write(
-              `<embed width="100%" height="100%" name="plugin" src="${pdfDataUri}" type="application/pdf" />`
-            );
-            ventanaImpresion.document.close();
-
-            ventanaImpresion.onload = () => {
-              ventanaImpresion.print();
-              setTimeout(() => {
-                ventanaImpresion.close();
-              }, 500);
-            };
-          } else {
-            console.error('No se pudo abrir la ventana de impresión.');
-          }
-        } catch (error) {
-          console.error('Error al capturar la sección HTML:', error);
-        }
-      }
 
 
 
